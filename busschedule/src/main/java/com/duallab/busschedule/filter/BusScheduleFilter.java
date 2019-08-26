@@ -12,30 +12,36 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class  FilterMoreThenOneHour implements Filter<BusSchedule> {
+@VisibleForTesting
+public class BusScheduleFilter implements Filter<BusSchedule> {
 
     @Override
-    public List<BusSchedule> applyFilter(List<BusSchedule> list) {
-        return list.stream()
+    public List<BusSchedule> filter(List<BusSchedule> list) {
+        return startsSameTimeAndReachesEarlier.andThen(startsLaterAndReachesAtSameTime).andThen(startsLaterAndReachesEarlier)
+                .apply(list.stream()
                 .filter(isInTime)
-                .collect(Collectors.toList());
+                .sorted(compareByCompanyNameAndTimeOut)
+                .collect(Collectors.toList()));
     }
 
-    public static Comparator<BusSchedule> compareByCompanyNameAndTimeOut = Comparator
+    @VisibleForTesting
+    Comparator<BusSchedule> compareByTimeIn = Comparator
+            .comparing(BusSchedule::getTimeIn);
+
+    @VisibleForTesting
+    Comparator<BusSchedule> compareByTimeOut = Comparator
+            .comparing(BusSchedule::getTimeOut);
+
+    @VisibleForTesting
+    Comparator<BusSchedule> compareByCompanyNameAndTimeOut = Comparator
             .comparing(BusSchedule::getCompanyName).reversed()
             .thenComparing(BusSchedule::getTimeOut);
 
+    @VisibleForTesting
+    Predicate<BusSchedule> isInTime = busSchedule -> busSchedule.getTimeIn().getTime() - busSchedule.getTimeOut().getTime() < 3600 * 1000;
 
-    public static Predicate<BusSchedule> isInTime = busSchedule -> busSchedule.getTimeIn().getTime() - busSchedule.getTimeOut().getTime() < 3600 * 1000;
-
-    static Comparator<BusSchedule> compareByTimeIn = Comparator
-            .comparing(BusSchedule::getTimeIn);
-
-
-    static Comparator<BusSchedule> compareByTimeOut = Comparator
-            .comparing(BusSchedule::getTimeOut);
-
-    public Function<List<BusSchedule>, List<BusSchedule>> clean1Imp = list -> {
+    @VisibleForTesting
+    Function<List<BusSchedule>, List<BusSchedule>> startsSameTimeAndReachesEarlier = list -> {
         List<Time> timeOutList = list.stream().map(item -> item.getTimeOut()).distinct().collect(Collectors.toList());
         List<BusSchedule> cleanedList = new ArrayList<>();
         for (Time outTime : timeOutList) {
@@ -49,11 +55,11 @@ public class  FilterMoreThenOneHour implements Filter<BusSchedule> {
         return cleanedList;
     };
 
-
-    public Function<List<BusSchedule>, List<BusSchedule>> clean2Imp = list -> {
-        List<Time> timeOutList = list.stream().map(item -> item.getTimeIn()).distinct().collect(Collectors.toList());
+    @VisibleForTesting
+    Function<List<BusSchedule>, List<BusSchedule>>  startsLaterAndReachesAtSameTime = list -> {
+        List<Time> timeInList = list.stream().map(item -> item.getTimeIn()).distinct().collect(Collectors.toList());
         List<BusSchedule> cleanedList = new ArrayList<>();
-        for (Time timeIn : timeOutList) {
+        for (Time timeIn : timeInList) {
             BusSchedule busSchedule = list.stream()
                     .filter(item -> item.getTimeIn().equals(timeIn))
                     .sorted(compareByTimeOut.reversed())
@@ -64,8 +70,8 @@ public class  FilterMoreThenOneHour implements Filter<BusSchedule> {
         return cleanedList;
     };
 
-    public Function<List<BusSchedule>, List<BusSchedule>> clean3Imp = list -> {
+    @VisibleForTesting
+    public Function<List<BusSchedule>, List<BusSchedule>> startsLaterAndReachesEarlier = list -> {
         return list.stream().filter(elem -> list.stream().filter(bigElem -> bigElem.getTimeOut().after(elem.getTimeOut()) && bigElem.getTimeIn().before(elem.getTimeIn())).count() == 0).collect(Collectors.toList());
     };
-
 }

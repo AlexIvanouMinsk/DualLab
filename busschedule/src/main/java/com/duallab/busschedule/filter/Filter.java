@@ -3,5 +3,5 @@ package com.duallab.busschedule.filter;
 import java.util.List;
 
 public interface Filter <T> {
-    List<T> applyFilter(List<T> list);
+    List<T> filter(List<T> list);
 }

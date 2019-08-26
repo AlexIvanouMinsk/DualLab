@@ -2,9 +2,8 @@ package com.duallab.busschedule.writer;
 
 
 import com.duallab.busschedule.model.BusSchedule;
-import com.google.common.annotations.VisibleForTesting;
+import com.duallab.busschedule.writer.exception.WriteResultException;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,19 +14,17 @@ import java.util.List;
 public class BusScheduleFileWriter implements Writer<BusSchedule> {
 
     @Override
-    public void writeAll(List<BusSchedule> list) {
-        List<String> outputList = createListForFileSave(list);
+    public void writeAll(List<BusSchedule> list) throws WriteResultException {
+        List<String> outputList = processToRightFormat(list);
         Charset utf8 = StandardCharsets.UTF_8;
-
         try {
-            Files.write(Paths.get("app.log"), outputList, utf8);
-        } catch (IOException x) {
-            System.err.format("IOException: %s%n", x);
+            Files.write(Paths.get("result.txt"), outputList, utf8);
+        } catch (Exception ex) {
+            throw new WriteResultException("Can't save the result", ex);
         }
     }
 
-    @VisibleForTesting
-    private List<String> createListForFileSave(List<BusSchedule> list) {
+    private List<String> processToRightFormat(List<BusSchedule> list) {
         long poshCount = list.stream().filter(item -> item.getCompanyName().equalsIgnoreCase("posh")).count();
         List<String> outputList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {

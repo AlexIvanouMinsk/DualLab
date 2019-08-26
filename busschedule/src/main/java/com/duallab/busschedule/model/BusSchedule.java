@@ -1,14 +1,18 @@
 package com.duallab.busschedule.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Time;
 import java.util.function.Function;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BusSchedule {
     private String companyName;
     private Time timeOut;
@@ -33,7 +37,6 @@ public class BusSchedule {
                 .append(busSchedule.timeOut.toString().substring(0, 5))
                 .append(" ")
                 .append(busSchedule.getTimeIn().toString().substring(0, 5));
-
         return stringBuilder.toString();
     };
 }
