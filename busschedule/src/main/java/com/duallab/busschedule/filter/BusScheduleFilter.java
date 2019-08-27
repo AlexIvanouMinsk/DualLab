@@ -19,9 +19,9 @@ public class BusScheduleFilter implements Filter<BusSchedule> {
     public List<BusSchedule> filter(List<BusSchedule> list) {
         return startsSameTimeAndReachesEarlier.andThen(startsLaterAndReachesAtSameTime).andThen(startsLaterAndReachesEarlier)
                 .apply(list.stream()
-                .filter(isInTime)
-                .sorted(compareByCompanyNameAndTimeOut)
-                .collect(Collectors.toList()));
+                        .filter(isInTime)
+                        .sorted(compareByCompanyNameAndTimeOut)
+                        .collect(Collectors.toList()));
     }
 
     @VisibleForTesting
@@ -56,7 +56,7 @@ public class BusScheduleFilter implements Filter<BusSchedule> {
     };
 
     @VisibleForTesting
-    Function<List<BusSchedule>, List<BusSchedule>>  startsLaterAndReachesAtSameTime = list -> {
+    Function<List<BusSchedule>, List<BusSchedule>> startsLaterAndReachesAtSameTime = list -> {
         List<Time> timeInList = list.stream().map(item -> item.getTimeIn()).distinct().collect(Collectors.toList());
         List<BusSchedule> cleanedList = new ArrayList<>();
         for (Time timeIn : timeInList) {

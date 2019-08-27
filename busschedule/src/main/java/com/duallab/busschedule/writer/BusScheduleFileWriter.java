@@ -15,7 +15,7 @@ public class BusScheduleFileWriter implements Writer<BusSchedule> {
 
     @Override
     public void writeAll(List<BusSchedule> list) throws WriteResultException {
-        List<String> outputList = processToRightFormat(list);
+        List<String> outputList = convertToOutputFormat(list);
         Charset utf8 = StandardCharsets.UTF_8;
         try {
             Files.write(Paths.get("result.txt"), outputList, utf8);
@@ -24,7 +24,7 @@ public class BusScheduleFileWriter implements Writer<BusSchedule> {
         }
     }
 
-    private List<String> processToRightFormat(List<BusSchedule> list) {
+    private List<String> convertToOutputFormat(List<BusSchedule> list) {
         long poshCount = list.stream().filter(item -> item.getCompanyName().equalsIgnoreCase("posh")).count();
         List<String> outputList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
